@@ -7,34 +7,58 @@ const app = express();
 
 const home = path.join(__dirname, "../public/index.html");
 const question1 = path.join(__dirname, "../input/question-1/main.csv");
+const question2 = path.join(__dirname, "../input/question-2/main.csv");
+const question3 = path.join(__dirname, "../input/question-2/main.csv");
 const answer1 = path.join(__dirname, "../output/answer-1/");
+const answer2 = path.join(__dirname, "../output/answer-2/");
+const answer3 = path.join(__dirname, "../output/answer-3/");
 
-const { groupByDecade } = require("./solution");
-
+const { groupByDecade, 
+        occupationByAge,
+        teamsAndCards } = require("./solution");
 
 let solution1;
+let solution2;
+let solution3;
 
 function main() {
   csv()
     .fromFile(question1)
     .then(crimeData => {
       solution1 = groupByDecade(crimeData);
-      saveData(groupByDecade(crimeData), "answer1");
+      const fields = [" ","Population","Violent","Property","Murder","Forcible_Rape","Robbery","Aggravated_assault","Burglary","Larceny_Theft","Vehicle_Theft"];
+      saveData(solution1, answer1, fields);
     });
+
+  csv()
+    .fromFile(question2)
+    .then(occupationData => {
+      solution2 = occupationByAge(occupationData);
+      const fields = ["occupation","minAge","maxAge"];
+      saveData(solution2, answer2, fields);
+    });
+
+  csv()
+    .fromFile(question3)
+    .then(teamData => {
+      solution3 = teamsAndCards(teamData);
+      // const fields = ["occupation","minAge","maxAge"];
+      // saveData(solution2, answer2, fields);
+    });
+
 }
 
 main();
 
 
-const saveData = (result, fileName = "data") => {
+const saveData = (result, path , name, fields) => {
   
-  const fields = [" ","Population","Violent","Property","Murder","Forcible_Rape","Robbery","Aggravated_assault","Burglary","Larceny_Theft","Vehicle_Theft"];
   const opts = { fields };
   try {
     const parser = new Parser(opts);
     const csv = parser.parse(Object.values(result));
     
-    fs.writeFile(answer1 + fileName +".csv", csv, "utf8", err => {
+    fs.writeFile(  path + "main" +".csv", csv, "utf8", err => {
       if (err) {
       console.error(err);
       }
@@ -48,9 +72,19 @@ const saveData = (result, fileName = "data") => {
 
 app.use(express.static("public"));
 
-// serve index.html
+// solution1
 app.get("/solution1", function(req, res) {
   res.json(solution1)
+});
+
+// solution2
+app.get("/solution2", function(req, res) {
+  res.json(solution2)
+});
+
+// solution3
+app.get("/solution2", function(req, res) {
+  res.json(solution2)
 });
 
 const PORT = process.env.PORT || 8000;
