@@ -5,10 +5,9 @@ const { Parser } = require("json2csv");
 const express = require("express");
 const app = express();
 
-const home = path.join(__dirname, "../public/index.html");
 const question1 = path.join(__dirname, "../input/question-1/main.csv");
 const question2 = path.join(__dirname, "../input/question-2/main.csv");
-const question3 = path.join(__dirname, "../input/question-2/main.csv");
+const question3 = path.join(__dirname, "../input/question-3/main.csv");
 const answer1 = path.join(__dirname, "../output/answer-1/");
 const answer2 = path.join(__dirname, "../output/answer-2/");
 const answer3 = path.join(__dirname, "../output/answer-3/");
@@ -41,15 +40,19 @@ function main() {
   csv()
     .fromFile(question3)
     .then(teamData => {
-      solution3 = teamsAndCards(teamData);
-      // const fields = ["occupation","minAge","maxAge"];
-      // saveData(solution2, answer2, fields);
+      solution3 = teamsAndCards(teamData).reduce((acc, cv) => {
+        acc[cv[0]] = {};
+        acc[cv[0]] = cv[1];
+        return acc
+      }, {});
+      console.log(solution3)
+      const fields = ["Team","Yellow Cards","Red Cards"];
+      saveData(solution3, answer3, fields);
     });
 
 }
 
 main();
-
 
 const saveData = (result, path , name, fields) => {
   
@@ -69,7 +72,6 @@ const saveData = (result, path , name, fields) => {
  
 };
 
-
 app.use(express.static("public"));
 
 // solution1
@@ -83,8 +85,8 @@ app.get("/solution2", function(req, res) {
 });
 
 // solution3
-app.get("/solution2", function(req, res) {
-  res.json(solution2)
+app.get("/solution3", function(req, res) {
+  res.json(solution3)
 });
 
 const PORT = process.env.PORT || 8000;
